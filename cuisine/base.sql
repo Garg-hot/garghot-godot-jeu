@@ -21,10 +21,10 @@ CREATE TABLE Plat_ingredient (
 );
 
 insert into ingredients (nom, sprite) values
-    ('banane', 'res://assets/banana.png'),
-    ('poulet', 'res://assets/poulet.png'),
-    ('carrot', 'res://assets/carrot.png'),
-    ('fromage', 'res://assets/cheese.png');
+    ('banane', 'banana.png'),
+    ('poulet', 'poulet.png'),
+    ('carrot', 'carrot.png'),
+    ('fromage', 'cheese.png');
 
 
 

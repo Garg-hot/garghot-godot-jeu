@@ -1,8 +1,9 @@
 extends CharacterBody2D
 
 const MOTION_SPEED = 160 # Pixels/second.
-
+var food_info = null
 var last_direction = Vector2(1, 0)
+var food_held: Node2D = null  # Stocke l'objet ramassé
 
 var anim_directions = {
 	"idle": [ # list of [animation name, horizontal flip]
@@ -28,7 +29,7 @@ var anim_directions = {
 	],
 }
 
-var food_held = null  # Stocke l'objet ramassé
+
 
 func _physics_process(_delta):
 	var motion = Vector2()
@@ -71,14 +72,24 @@ func pick_food():
 		areas.sort_custom(func(a, b): 
 			return global_position.distance_to(a.global_position) < global_position.distance_to(b.global_position)
 		)
-		
 		var closest_food = areas[0]  # Prend l'aliment le plus proche
 		if closest_food.is_in_group("ingredients"):
 			food_held = closest_food
 			food_held.get_parent().remove_child(food_held)
 			add_child(food_held)
 			food_held.position = Vector2(0, -40)  # Position relative au joueur
-			print("Nourriture ramassée :", food_held.name)
+			var sprite = closest_food.get_node_or_null("Sprite2D")
+			if sprite and sprite.texture:
+				var sprite_path = sprite.texture.resource_path
+				for ingredient in GetIngredient.food_data:
+					var path = "res://assets/" + ingredient["sprite"]
+					if path in sprite_path:
+						food_info = ingredient
+						print("Nourriture ramassée :", food_info["nom"])
+						break
+			else:
+				print("tsisy")
+
 
 func drop_food():
 	if food_held:
