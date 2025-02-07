@@ -39,6 +39,7 @@ final class PlatController extends AbstractController
         #[Route('/create', name:'create')]
         public function create(Request $request, EntityManagerInterface $entityManager){
             $plat = new Plat();
+            $plat2= new Plat();
             $form= $this->createForm(PlatType::class, $plat);
             $form->handleRequest($request);
             if($form->isSubmitted() && $form->isValid()){
