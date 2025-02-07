@@ -10,7 +10,7 @@ if ($conn->connect_error) {
     die("Connexion échouée: " . $conn->connect_error);
 }
 
-$result = $conn->query("SELECT * FROM ingredients ORDER BY RAND() LIMIT 1");
+$result = $conn->query("SELECT * FROM ingredients ");
 
 $foods = [];
 while ($row = $result->fetch_assoc()) {
