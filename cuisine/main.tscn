@@ -1,16 +1,12 @@
-[gd_scene load_steps=4 format=3 uid="uid://djud7ls5qjsds"]
+[gd_scene load_steps=3 format=3 uid="uid://djud7ls5qjsds"]
 
 [ext_resource type="PackedScene" uid="uid://ckgv5dwlfsolj" path="res://player.tscn" id="1_fo3fd"]
 [ext_resource type="Script" path="res://main.gd" id="1_gj1ut"]
-[ext_resource type="PackedScene" uid="uid://b8hnf7qj1gd07" path="res://marmite.tscn" id="3_w2xv1"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_gj1ut")
-
-[node name="Marmite" parent="." instance=ExtResource("3_w2xv1")]
-position = Vector2(330, 67)
 
 [node name="Player" parent="." instance=ExtResource("1_fo3fd")]
 

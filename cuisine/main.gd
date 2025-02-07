@@ -1,14 +1,23 @@
 extends Node
 
-var plats_data = []  # Liste des plats disponibles
-var plats_en_cours = []  # Liste des plats en cours
+const FeuScene = preload("res://surface.tscn")  # Charge la scène du feu
+@onready var main = $"."  # Référence directe à la scène principale
+
+var commandes_data = []  # Liste des commandes disponibles
+var commandes_en_cours = []  # Liste des commandes en cours
 var commande_en_cours = false  # Variable pour suivre si une commande est en cours
+var nb_feux = 3
+var feux = []
 
 func _ready():
-	# Connexion à la requête HTTP
+	generer_feux()
+	fetch_commandes()  # Récupère les commandes initialement
+
+# Fonction pour récupérer les commandes depuis le serveur
+func fetch_commandes():
 	var http_request = $HTTPRequest
 	http_request.connect("request_completed", Callable(self, "_on_HTTPRequest_request_completed"))
-	http_request.request("http://localhost/cuisine_game_ap/get_plats.php")  # URL modifiée pour les plats
+	http_request.request("http://localhost/cuisine_game_ap/get_plats.php")  # URL modifiée pour les commandes
 
 # Callback lorsque la requête HTTP est terminée
 func _on_HTTPRequest_request_completed(result, response_code, headers, body):
@@ -18,81 +27,60 @@ func _on_HTTPRequest_request_completed(result, response_code, headers, body):
 		if err != OK:
 			print("Erreur de décodage JSON!")
 			return
-		plats_data = json_instance.get_data()  # Récupère directement le tableau des plats
-		display_plats()  # Affichage des plats
+		commandes_data = json_instance.get_data()  # Récupère directement le tableau des commandes
+		print("Données des commandes reçues : ", commandes_data)  # Débogage : vérifier la structure des données
+		display_commandes()  # Affichage des commandes
 
-# Fonction pour afficher les plats dans la scène
-func display_plats():
+# Fonction pour afficher les commandes dans la scène
+func display_commandes():
 	var y_position = 0  # Position verticale de départ
-	for plat in plats_data:
-		var button = Button.new()  # Crée un nouveau Button au lieu d'un Label
-		button.text = plat["nom_plat"]  # Définit le texte du bouton avec le nom du plat
-		button.set_position(Vector2(50, y_position))  # Positionne le bouton sur l'écran
-		button.connect("pressed", Callable(self, "_on_plat_selected").bind(plat, button))  # Connecte le signal 'pressed' au bouton
-		button.disabled = commande_en_cours  # Désactive le bouton si une commande est en cours
-		y_position += 40  # Incrémente la position verticale pour le prochain bouton
-		add_child(button)  # Ajoute le bouton à la scène
+	for commande in commandes_data:
+		var label = Label.new()  # Crée un nouveau Label
+		label.text = "Commande " + str(commande["commande_id"]) + " - Client: " + commande["client_nom"]  # Définit le texte du label avec les infos de la commande
+		label.set_position(Vector2(50, y_position))  # Positionne le label sur l'écran
+		y_position += 40  # Incrémente la position verticale pour le prochain label
+		add_child(label)  # Ajoute le label à la scène
 
-# Fonction appelée lorsque un bouton est cliqué
-func _on_plat_selected(plat, button):
-	if not commande_en_cours:  # Vérifie si aucune commande n'est en cours
-		commande_en_cours = true  # Définit la commande en cours
-		plats_data.erase(plat)  # Supprime le plat de la liste des plats disponibles
-		plats_en_cours.append(plat)  # Ajoute le plat à la liste des plats en cours
-		button.queue_free()  # Supprime le bouton de la scène
-		print("Plat ajouté aux plats en cours: ", plat["nom_plat"])  # Affiche le nom du plat dans la console
-		# Mettre à jour l'affichage des plats en cours
-		display_plats_en_cours()
-		# Désactiver les autres boutons
-		for node in get_children():
-			if node is Button:
-				node.disabled = true
+		# Affiche les plats pour cette commande
+		for plat in commande["plats"]:
+			if plat.has("nom_plat"):
+				var plat_button = Button.new()
+				plat_button.text = plat["nom_plat"]
+				plat_button.set_position(Vector2(70, y_position))
+				plat_button.connect("pressed", Callable(self, "_on_plat_clicked").bind(plat))
+				y_position += 20  # Incrémente la position verticale pour le prochain plat
+				add_child(plat_button)
+			else:
+				print("Erreur : le plat ne contient pas la clé 'nom_plat'. Contenu du plat : ", plat)
+		y_position += 20  # Espacement supplémentaire entre les commandes
 
-# Fonction pour afficher les plats en cours dans la scène
-func display_plats_en_cours():
-	# Suppression des boutons existants avant de les recréer
-	for node in get_children():
-		if node is Button and node.global_position.x == 300:
-			node.queue_free()
-
-	var y_position = 0  # Position verticale de départ pour les plats en cours
-	for plat in plats_en_cours:
-		var button = Button.new()  # Crée un nouveau Button au lieu d'un Label
-		button.text = plat["nom_plat"]  # Définit le texte du bouton avec le nom du plat
-		button.set_position(Vector2(300, y_position))  # Positionne le bouton sur l'écran
-		button.connect("pressed", Callable(self, "_on_plat_en_cours_selected").bind(plat))  # Connecte le signal 'pressed' au bouton
-		y_position += 40  # Incrémente la position verticale pour le prochain bouton
-		add_child(button)  # Ajoute le bouton à la scène
-
-func _on_plat_en_cours_selected(plat):
-	print("Plat en cours sélectionné: ", plat["nom_plat"])
-	afficher_ingredients_plat(plat)
-
-# Fonction pour afficher la liste des ingrédients du plat sélectionné
-func afficher_ingredients_plat(plat):
-	var ingredients = obtenir_ingredients_du_plat(plat["id"])
-	print("Ingrédients pour ", plat["nom_plat"], ":")
-	for ingredient in ingredients:
-		print("- ", ingredient["nom"])
-
-# Fonction pour obtenir les ingrédients d'un plat à partir de l'ID du plat
-func obtenir_ingredients_du_plat(plat_id):
-	# Simuler l'interrogation de la base de données pour obtenir les ingrédients du plat
-	# Normalement, vous feriez une requête à votre serveur ou base de données
-	var ingredients = []
-	match plat_id:
-		1:
-			ingredients.append({"nom": "Poulet", "sprite": "res://assets/poulet.png"})
-			ingredients.append({"nom": "Fromage", "sprite": "res://assets/cheese.png"})
-		# Ajouter d'autres plats et leurs ingrédients si nécessaire
-	return ingredients
+# Fonction appelée lorsque un bouton de plat est cliqué
+func _on_plat_clicked(plat):
+	print("Plat cliqué: ", plat["nom_plat"])
+	# Ajoutez ici le code pour gérer l'événement de clic sur un plat
 
 # Fonction pour terminer une commande (par exemple, quand la commande est prête)
 func terminer_commande():
 	commande_en_cours = false  # Réinitialise la commande en cours
-	plats_en_cours.clear()  # Vide la liste des plats en cours
+	commandes_en_cours.clear()  # Vide la liste des commandes en cours
 	# Réactiver les boutons
 	for node in get_children():
 		if node is Button:
 			node.disabled = false
 	print("Commande terminée et liste réinitialisée")
+	fetch_commandes()  # Récupère à nouveau les commandes après la terminaison d'une commande
+
+func generer_feux():
+	var spacing = 75  # Espacement entre chaque feu (ajuste selon tes besoins)
+	
+	for i in range(nb_feux):
+		var feu_instance = FeuScene.instantiate()
+		feu_instance.name = "Feu_" + str(i)
+
+		main.add_child(feu_instance)
+		main.move_child(feu_instance, 1)
+		feux.append(feu_instance)
+
+		# Positionnement manuel (ex: en ligne horizontale)
+		var offset = Vector2(600, 150)
+		feu_instance.position = Vector2(i * spacing, i * spacing/2) + offset

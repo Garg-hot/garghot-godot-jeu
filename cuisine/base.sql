@@ -69,7 +69,9 @@ CREATE TABLE Commande_Plat (
 
 -- Insertion d'une commande (exemple)
 INSERT INTO Commande (id_client, statut) VALUES (1, 'En cours');
+INSERT INTO Commande (id_client, statut) VALUES (2, 'En cours');
 
 -- Insertion de plats dans la commande (exemples)
 INSERT INTO Commande_Plat (id_commande, id_plat) VALUES (1, 1);  -- Plat Pizza dans la commande
 INSERT INTO Commande_Plat (id_commande, id_plat) VALUES (1, 2);  -- Plat Salade dans la commande
+INSERT INTO Commande_Plat (id_commande, id_plat) VALUES (2, 2);  -- Plat Salade dans la commande
