@@ -12,6 +12,7 @@ var plats_en_cours = []  # Liste des plats en cours
 var commande_en_cours = false  # Variable pour suivre si une commande est en cours
 var nb_feux = 3  # Nombre de feux
 var feux = []  # Liste des feux
+var first_free_marmite = null  # Propriété pour stocker la première marmite libre
 
 func _ready():
 	generer_feux()
@@ -32,7 +33,7 @@ func _on_HTTPRequest_request_completed(result, response_code, headers, body):
 			print("Erreur de décodage JSON!")
 			return
 		commandes_data = json_instance.get_data()  # Récupère directement le tableau des commandes
-		print("Données des commandes reçues : ", commandes_data)  # Débogage : vérifier la structure des données
+		#print("Données des commandes reçues : ", commandes_data)  # Débogage : vérifier la structure des données
 		display_commandes()  # Affichage des commandes
 
 # Fonction pour afficher les commandes dans la scène
@@ -40,7 +41,7 @@ func display_commandes():
 	clear_container(commandes_container)  # Supprime les boutons et labels existants
 	for commande in commandes_data:
 		var commande_label = Label.new()  # Crée un nouveau Label
-		commande_label.text = "Commande " + str(commande["commande_id"]) + " - Client: " + commande["client_nom"]
+		commande_label.text = "Commande " + str(commande["commande_id"])  
 		commandes_container.add_child(commande_label)  # Ajoute le label au conteneur
 
 		# Affiche les plats pour cette commande
@@ -55,11 +56,25 @@ func display_commandes():
 
 # Fonction appelée lorsque un bouton de plat est cliqué
 func _on_plat_clicked(commande, plat, plat_button):
-	plats_en_cours.append(plat)
-	commande["plats"].erase(plat)  # Supprime le plat de la commande
-	plat_button.queue_free()  # Supprime le bouton du plat de la scène
-	print("Plat sélectionné et ajouté à la liste des plats en cours : ", plat["nom_plat"])
-	display_plats_en_cours()
+	if first_free_marmite == null:
+		# Trouver la première marmite libre
+		for marmite in feux:
+			if marmite.is_ready_for_new_plat():  # Vérifie si la marmite est prête pour un nouveau plat
+				first_free_marmite = marmite
+				break
+		
+	if first_free_marmite != null:
+		plats_en_cours.append(plat)
+		commande["plats"].erase(plat)  # Supprime le plat de la commande
+		plat_button.queue_free()  # Supprime le bouton du plat de la scène
+		print("Plat sélectionné et ajouté à la liste des plats en cours : ", plat["nom_plat"])
+		display_plats_en_cours()
+		
+		first_free_marmite.assign_plat(plat)  # Assigne le plat à la marmite
+		first_free_marmite = null  # Réinitialise la marmite libre
+	else:
+		print("Aucune marmite libre disponible.")
+
 
 # Fonction pour afficher les plats en cours
 func display_plats_en_cours():

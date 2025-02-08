@@ -1,4 +1,4 @@
-extends Area2D
+class_name Player extends Area2D
 
 var player_nearby = false  
 var ingredient_plats = []  # Liste des ingrédients nécessaires pour le plat sélectionné
@@ -92,6 +92,7 @@ func _on_request_completed(_result, response_code, _headers, body):
 			for commande in data:
 				for plat in commande["plats"]:
 					ajouter_plats_a_preparer(nouveaux_plats, plat)
+			print(data)
 
 func ajouter_plats_a_preparer(nouveaux_plats, plat):
 	var plat_id = int(plat["id"])

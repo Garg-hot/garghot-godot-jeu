@@ -34,19 +34,5 @@ shape = SubResource("RectangleShape2D_h0ilc")
 offset_right = 40.0
 offset_bottom = 23.0
 
-[node name="ProgressBar" type="ProgressBar" parent="."]
-offset_left = -28.2895
-offset_top = -43.4211
-offset_right = 20.7105
-offset_bottom = -16.4211
-
-[node name="Timer" type="Timer" parent="."]
-
-[node name="Label" type="Label" parent="."]
-offset_left = -16.0
-offset_top = -42.0
-offset_right = 6.0
-offset_bottom = -19.0
-
 [connection signal="body_entered" from="comptoir_interaction" to="comptoir_interaction" method="_on_body_entered"]
 [connection signal="body_exited" from="comptoir_interaction" to="comptoir_interaction" method="_on_body_exited"]
