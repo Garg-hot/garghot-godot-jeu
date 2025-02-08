@@ -54,7 +54,7 @@ func update_animation(anim_set):
 	$Sprite.flip_h = anim_directions[anim_set][slice_dir][1]
 
 func _process(delta):
-	if Input.is_action_just_pressed("interact"):  # "E" dans les Input Map
+	if Input.is_action_just_pressed("pick"):  # "F" dans les Input Map
 		if food_held:
 			# Vérifie si le joueur est à proximité de la marmite
 			if is_near_marmite():
@@ -106,7 +106,7 @@ func add_food_to_marmite():
 	if food_held:
 		for area in $PickupArea.get_overlapping_areas():
 			if area.is_in_group("marmite"):
-				print("🍲 Ajout de", food_held.name, "à la marmite")
+				print("🍲 Ajout de", food_info["nom"], "à la marmite")  # Utilisation de food_info["nom"]
 				var marmite = area.get_parent()
 				if marmite.has_method("add_ingredient"):
 					marmite.add_ingredient(food_held)  # Appelle la fonction dans `marmite.gd`

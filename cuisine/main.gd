@@ -2,9 +2,10 @@ extends Node
 
 const FeuScene = preload("res://Marmite.tscn")  # Charge la scène du feu
 @onready var main = $"."  # Référence directe à la scène principale
-@onready var commandes_container = $CommandesContainer  # Conteneur pour les commandes
-@onready var plats_en_cours_container = $PlatsEnCoursContainer  # Conteneur pour les plats en cours
-@onready var ingredients_container = $IngredientsContainer  # Conteneur pour les ingrédients
+@onready var ui_layer = $UI  # Référence au CanvasLayer
+@onready var commandes_container = $UI/CommandesContainer  # Conteneur pour les commandes
+@onready var plats_en_cours_container = $UI/PlatsEnCoursContainer  # Conteneur pour les plats en cours
+@onready var ingredients_container = $UI/IngredientsContainer  # Conteneur pour les ingrédients
 
 var commandes_data = []  # Liste des commandes disponibles
 var plats_en_cours = []  # Liste des plats en cours
