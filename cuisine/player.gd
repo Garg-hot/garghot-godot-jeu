@@ -1,10 +1,10 @@
-class_name Player
 extends CharacterBody2D
 
 const MOTION_SPEED = 160  # Pixels/second
 var food_info = null
 var last_direction = Vector2(1, 0)
 var food_held: Node2D = null  # Stocke l'objet ramassé
+var plat_image: Texture = null  # Propriété pour stocker l'image du plat récupéré
 
 var anim_directions = {
 	"idle": [  # list of [animation name, horizontal flip]
@@ -46,6 +46,11 @@ func _physics_process(_delta):
 	else:
 		update_animation("idle")
 
+	if plat_image:
+		var plat_sprite = $PlatSprite
+		if plat_sprite:
+			plat_sprite.texture = plat_image
+
 func update_animation(anim_set):
 	var angle = rad_to_deg(last_direction.angle()) + 22.5
 	var slice_dir = floor(angle / 45)
@@ -54,7 +59,7 @@ func update_animation(anim_set):
 	$Sprite.flip_h = anim_directions[anim_set][slice_dir][1]
 
 func _process(delta):
-	if Input.is_action_just_pressed("interact"):  # "E" dans les Input Map
+	if Input.is_action_just_pressed("pick"):  # "F" dans les Input Map
 		if food_held:
 			# Vérifie si le joueur est à proximité de la marmite
 			if is_near_marmite():
@@ -63,6 +68,12 @@ func _process(delta):
 				drop_food()
 		else:
 			pick_food()
+	elif Input.is_action_just_pressed("interact"):  # "E" dans les Input Map
+		if is_near_marmite():
+			afficher_ingredients_marmite()
+	elif Input.is_action_just_pressed("recover"):  # "A" dans les Input Map
+		if is_near_marmite():
+			recuperer_plat()
 
 func pick_food():
 	var areas = $PickupArea.get_overlapping_areas()
@@ -88,12 +99,14 @@ func pick_food():
 				print("tsisy")
 
 func drop_food():
-	if food_held:
+	if food_held and is_instance_valid(food_held):
 		remove_child(food_held)
 		get_parent().add_child(food_held)
 		food_held.global_position = global_position + Vector2(20, 20)  # Dépose un peu plus loin
 		food_held = null
 		print("Nourriture lâchée !")
+	else:
+		print("Erreur : food_held est invalide.")
 
 func is_near_marmite():
 	var areas = $PickupArea.get_overlapping_areas()
@@ -103,14 +116,37 @@ func is_near_marmite():
 	return false
 
 func add_food_to_marmite():
-	if food_held:
+	if food_held and is_instance_valid(food_held):
 		for area in $PickupArea.get_overlapping_areas():
 			if area.is_in_group("marmite"):
-				print("🍲 Ajout de", food_held.name, "à la marmite")
 				var marmite = area.get_parent()
 				if marmite.has_method("add_ingredient"):
-					marmite.add_ingredient(food_held)  # Appelle la fonction dans `marmite.gd`
+					marmite.add_ingredient(food_info, food_held)  # Appelle la fonction dans `marmite.gd`
 					food_held = null
 				else:
 					print("Erreur : le nœud marmite n'a pas de méthode 'add_ingredient'.")
 				return
+	else:
+		print("Erreur : food_held est invalide.")
+
+func afficher_ingredients_marmite():
+	var areas = $PickupArea.get_overlapping_areas()
+	for area in areas:
+		if area.is_in_group("marmite"):
+			var marmite = area.get_parent()
+			if marmite.has_method("afficher_ingredients_necessaires"):
+				marmite.afficher_ingredients_necessaires()  # Affiche les ingrédients nécessaires
+				return
+
+func recuperer_plat():
+	var areas = $PickupArea.get_overlapping_areas()
+	for area in areas:
+		if area.is_in_group("marmite"):
+			var marmite = area.get_parent()
+			if marmite.has_method("recuperer_plat"):
+				marmite.recuperer_plat()  # Appelle la fonction dans `marmite.gd`
+				return
+
+func set_plat_image(image_path):
+	plat_image = load(image_path)
+	print("Image du plat définie :", image_path)
