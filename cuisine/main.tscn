@@ -1,29 +1,14 @@
-[gd_scene load_steps=5 format=3 uid="uid://djud7ls5qjsds"]
+[gd_scene load_steps=3 format=3 uid="uid://djud7ls5qjsds"]
 
 [ext_resource type="PackedScene" uid="uid://ckgv5dwlfsolj" path="res://player.tscn" id="1_fo3fd"]
 [ext_resource type="Script" path="res://main.gd" id="1_gj1ut"]
-[ext_resource type="PackedScene" uid="uid://b8hnf7qj1gd07" path="res://marmite.tscn" id="3_w2xv1"]
-[ext_resource type="PackedScene" uid="uid://x5yq4co3pchw" path="res://ingredient.tscn" id="4_85pu6"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_gj1ut")
 
-[node name="Marmite" parent="." instance=ExtResource("3_w2xv1")]
-position = Vector2(330, 67)
-
-[node name="Ingredient" parent="." instance=ExtResource("4_85pu6")]
-position = Vector2(696, 102)
-scale = Vector2(2.68544, 2.70692)
-
 [node name="Player" parent="." instance=ExtResource("1_fo3fd")]
-
-[node name="Ingredient2" parent="." instance=ExtResource("4_85pu6")]
-position = Vector2(356, 221)
-scale = Vector2(2.6, 2.6)
-
-[node name="Ingredient3" parent="." instance=ExtResource("4_85pu6")]
 
 [node name="PlatsContainer" type="VBoxContainer" parent="."]
 layout_mode = 0
@@ -39,3 +24,24 @@ text = "Plat modele
 "
 
 [node name="HTTPRequest" type="HTTPRequest" parent="."]
+
+[node name="CommandesContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 272.0
+offset_top = -91.0
+offset_right = 312.0
+offset_bottom = -51.0
+
+[node name="PlatsEnCoursContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = -279.0
+offset_top = 101.0
+offset_right = -239.0
+offset_bottom = 141.0
+
+[node name="IngredientsContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = -186.0
+offset_top = 81.0
+offset_right = -146.0
+offset_bottom = 121.0

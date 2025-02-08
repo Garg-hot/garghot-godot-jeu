@@ -1408,11 +1408,6 @@ animations = [{
 "name": &"front_walk",
 "speed": 24.0
 }, {
-"frames": [],
-"loop": true,
-"name": &"new_animation",
-"speed": 5.0
-}, {
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_wiwm0")
@@ -1663,7 +1658,7 @@ script = ExtResource("1_3x51k")
 texture_filter = 1
 scale = Vector2(2.26667, 2.26667)
 sprite_frames = SubResource("SpriteFrames_x7e21")
-animation = &"new_animation"
+animation = &"45back_right_walk"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, 44.5)
