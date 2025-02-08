@@ -2,12 +2,15 @@ extends Node
 
 const FeuScene = preload("res://surface.tscn")  # Charge la scène du feu
 @onready var main = $"."  # Référence directe à la scène principale
+@onready var commandes_container = $CommandesContainer  # Conteneur pour les commandes
+@onready var plats_en_cours_container = $PlatsEnCoursContainer  # Conteneur pour les plats en cours
+@onready var ingredients_container = $IngredientsContainer  # Conteneur pour les ingrédients
 
 var commandes_data = []  # Liste des commandes disponibles
-var commandes_en_cours = []  # Liste des commandes en cours
+var plats_en_cours = []  # Liste des plats en cours
 var commande_en_cours = false  # Variable pour suivre si une commande est en cours
-var nb_feux = 3
-var feux = []
+var nb_feux = 3  # Nombre de feux
+var feux = []  # Liste des feux
 
 func _ready():
 	generer_feux()
@@ -33,36 +36,69 @@ func _on_HTTPRequest_request_completed(result, response_code, headers, body):
 
 # Fonction pour afficher les commandes dans la scène
 func display_commandes():
-	var y_position = 0  # Position verticale de départ
+	clear_container(commandes_container)  # Supprime les boutons et labels existants
 	for commande in commandes_data:
-		var label = Label.new()  # Crée un nouveau Label
-		label.text = "Commande " + str(commande["commande_id"]) + " - Client: " + commande["client_nom"]  # Définit le texte du label avec les infos de la commande
-		label.set_position(Vector2(50, y_position))  # Positionne le label sur l'écran
-		y_position += 40  # Incrémente la position verticale pour le prochain label
-		add_child(label)  # Ajoute le label à la scène
+		var commande_label = Label.new()  # Crée un nouveau Label
+		commande_label.text = "Commande " + str(commande["commande_id"]) + " - Client: " + commande["client_nom"]
+		commandes_container.add_child(commande_label)  # Ajoute le label au conteneur
 
 		# Affiche les plats pour cette commande
 		for plat in commande["plats"]:
 			if plat.has("nom_plat"):
 				var plat_button = Button.new()
 				plat_button.text = plat["nom_plat"]
-				plat_button.set_position(Vector2(70, y_position))
-				plat_button.connect("pressed", Callable(self, "_on_plat_clicked").bind(plat))
-				y_position += 20  # Incrémente la position verticale pour le prochain plat
-				add_child(plat_button)
+				plat_button.connect("pressed", Callable(self, "_on_plat_clicked").bind(commande, plat, plat_button))
+				commandes_container.add_child(plat_button)
 			else:
 				print("Erreur : le plat ne contient pas la clé 'nom_plat'. Contenu du plat : ", plat)
-		y_position += 20  # Espacement supplémentaire entre les commandes
 
 # Fonction appelée lorsque un bouton de plat est cliqué
-func _on_plat_clicked(plat):
-	print("Plat cliqué: ", plat["nom_plat"])
-	# Ajoutez ici le code pour gérer l'événement de clic sur un plat
+func _on_plat_clicked(commande, plat, plat_button):
+	plats_en_cours.append(plat)
+	commande["plats"].erase(plat)  # Supprime le plat de la commande
+	plat_button.queue_free()  # Supprime le bouton du plat de la scène
+	print("Plat sélectionné et ajouté à la liste des plats en cours : ", plat["nom_plat"])
+	display_plats_en_cours()
+
+# Fonction pour afficher les plats en cours
+func display_plats_en_cours():
+	clear_container(plats_en_cours_container)  # Supprime les boutons existants
+	for plat in plats_en_cours:
+		var plat_button = Button.new()
+		plat_button.text = plat["nom_plat"]
+		plat_button.connect("pressed", Callable(self, "_on_plat_en_cours_clicked").bind(plat))
+		plats_en_cours_container.add_child(plat_button)
+
+# Fonction appelée lorsque un bouton de plat en cours est cliqué
+func _on_plat_en_cours_clicked(plat):
+	print("Plat en cours cliqué : ", plat["nom_plat"])
+	afficher_ingredients_plat(plat)
+
+# Fonction pour afficher la liste des ingrédients du plat sélectionné
+func afficher_ingredients_plat(plat):
+	var ingredients = plat["ingredients"]  # Récupère les ingrédients directement de l'objet plat
+	print("Ingrédients pour ", plat["nom_plat"], ":")
+	for ingredient in ingredients:
+		print("- ", ingredient["nom"])
+	display_ingredients(ingredients)
+
+# Fonction pour afficher les ingrédients dans la scène
+func display_ingredients(ingredients):
+	clear_container(ingredients_container)  # Supprime les labels existants
+	for ingredient in ingredients:
+		var ingredient_label = Label.new()
+		ingredient_label.text = ingredient["nom"]
+		ingredients_container.add_child(ingredient_label)
+
+# Fonction pour supprimer les enfants d'un conteneur
+func clear_container(container):
+	for child in container.get_children():
+		container.remove_child(child)
+		child.queue_free()
 
 # Fonction pour terminer une commande (par exemple, quand la commande est prête)
 func terminer_commande():
 	commande_en_cours = false  # Réinitialise la commande en cours
-	commandes_en_cours.clear()  # Vide la liste des commandes en cours
 	# Réactiver les boutons
 	for node in get_children():
 		if node is Button:

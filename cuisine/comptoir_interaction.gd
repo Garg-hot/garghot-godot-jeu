@@ -3,7 +3,7 @@ extends Area2D
 var player_nearby = false  
 var ingredient_plats = []  # Liste des ingrédients nécessaires pour le plat sélectionné
 var plat_selectionne = null  
-#var cuisson = preload("res://cuisson/cuisson.tscn")  q
+#var cuisson = preload("res://cuisson/cuisson.tscn")  
 const API_URL = "https://m-esakafo-1.onrender.com/api/commandes/attente"  
 #const PlatScene = preload("res://plats/plat.tscn")  
 var ingredient_trouve = null

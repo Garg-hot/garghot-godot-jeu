@@ -57,7 +57,7 @@ func spawn_food(food_info, position):
 	var texture = load("res://assets/" + food_info["sprite"])
 	if texture:
 		sprite.texture = texture
-		var target_size = Vector2(30, 30)
+		var target_size = Vector2(60, 60)
 		var texture_size = texture.get_size()
 		sprite.scale = target_size / texture_size
 		print(food_info)

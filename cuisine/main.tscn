@@ -24,3 +24,24 @@ text = "Plat modele
 "
 
 [node name="HTTPRequest" type="HTTPRequest" parent="."]
+
+[node name="CommandesContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 272.0
+offset_top = -91.0
+offset_right = 312.0
+offset_bottom = -51.0
+
+[node name="PlatsEnCoursContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = -279.0
+offset_top = 101.0
+offset_right = -239.0
+offset_bottom = 141.0
+
+[node name="IngredientsContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = -186.0
+offset_top = 81.0
+offset_right = -146.0
+offset_bottom = 121.0
