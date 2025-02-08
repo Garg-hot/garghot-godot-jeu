@@ -1646,7 +1646,7 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_uuirw"]
-size = Vector2(90, 51)
+size = Vector2(51, 136)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_qvgem"]
 radius = 21.2979
@@ -1661,7 +1661,7 @@ sprite_frames = SubResource("SpriteFrames_x7e21")
 animation = &"45back_right_walk"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, 44.5)
+position = Vector2(-4.5, 2)
 shape = SubResource("RectangleShape2D_uuirw")
 
 [node name="Camera2D" type="Camera2D" parent="."]
@@ -1670,4 +1670,5 @@ shape = SubResource("RectangleShape2D_uuirw")
 scale = Vector2(3.28, 3.28)
 
 [node name="PickupArea" type="CollisionShape2D" parent="PickupArea"]
+visible = false
 shape = SubResource("CircleShape2D_qvgem")

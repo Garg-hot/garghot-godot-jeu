@@ -1,6 +1,6 @@
 extends Node
 
-const FeuScene = preload("res://surface.tscn")  # Charge la scène du feu
+const FeuScene = preload("res://Marmite.tscn")  # Charge la scène du feu
 @onready var main = $"."  # Référence directe à la scène principale
 @onready var commandes_container = $CommandesContainer  # Conteneur pour les commandes
 @onready var plats_en_cours_container = $PlatsEnCoursContainer  # Conteneur pour les plats en cours

@@ -1,12 +1,13 @@
+class_name Player
 extends CharacterBody2D
 
-const MOTION_SPEED = 160 # Pixels/second.
+const MOTION_SPEED = 160  # Pixels/second
 var food_info = null
 var last_direction = Vector2(1, 0)
 var food_held: Node2D = null  # Stocke l'objet ramassé
 
 var anim_directions = {
-	"idle": [ # list of [animation name, horizontal flip]
+	"idle": [  # list of [animation name, horizontal flip]
 		["side_right_idle", false],
 		["45front_right_idle", false],
 		["front_idle", false],
@@ -28,8 +29,6 @@ var anim_directions = {
 		["45back_right_walk", false],
 	],
 }
-
-
 
 func _physics_process(_delta):
 	var motion = Vector2()
@@ -69,9 +68,7 @@ func pick_food():
 	var areas = $PickupArea.get_overlapping_areas()
 	if areas.size() > 0:
 		# Trouve l'aliment le plus proche du joueur
-		areas.sort_custom(func(a, b): 
-			return global_position.distance_to(a.global_position) < global_position.distance_to(b.global_position)
-		)
+		areas.sort_custom(func(a, b): return global_position.distance_to(a.global_position) < global_position.distance_to(b.global_position))
 		var closest_food = areas[0]  # Prend l'aliment le plus proche
 		if closest_food.is_in_group("ingredients"):
 			food_held = closest_food
@@ -89,7 +86,6 @@ func pick_food():
 						break
 			else:
 				print("tsisy")
-
 
 func drop_food():
 	if food_held:
@@ -111,6 +107,10 @@ func add_food_to_marmite():
 		for area in $PickupArea.get_overlapping_areas():
 			if area.is_in_group("marmite"):
 				print("🍲 Ajout de", food_held.name, "à la marmite")
-				area.add_ingredient(food_held)  # Appelle la fonction dans `marmite.gd`
-				food_held = null
+				var marmite = area.get_parent()
+				if marmite.has_method("add_ingredient"):
+					marmite.add_ingredient(food_held)  # Appelle la fonction dans `marmite.gd`
+					food_held = null
+				else:
+					print("Erreur : le nœud marmite n'a pas de méthode 'add_ingredient'.")
 				return

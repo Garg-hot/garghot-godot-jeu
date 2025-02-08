@@ -1,18 +1,38 @@
-[gd_scene load_steps=4 format=3 uid="uid://b8hnf7qj1gd07"]
+[gd_scene load_steps=6 format=3 uid="uid://b7qovi5wrjmjv"]
 
-[ext_resource type="Script" path="res://marmite.gd" id="1_27xr6"]
-[ext_resource type="Texture2D" uid="uid://bv3uw7d6a1xqj" path="res://marmite/marmite.png" id="1_hrudp"]
+[ext_resource type="Script" path="res://comptoir_interaction.gd" id="1_7cw65"]
+[ext_resource type="Script" path="res://marmite.gd" id="1_v5v84"]
+[ext_resource type="Texture2D" uid="uid://bsamiobj1s4tf" path="res://marmite/—Pngtree—pixel campfire_8134386.png" id="2_3qcrx"]
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_b1eam"]
-radius = 16.5906
+[sub_resource type="CircleShape2D" id="CircleShape2D_luk5g"]
+radius = 23.3452
 
-[node name="Marmite" type="Area2D"]
-script = ExtResource("1_27xr6")
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_h0ilc"]
+size = Vector2(29, 25)
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
-scale = Vector2(1.65625, 1.65625)
-texture = ExtResource("1_hrudp")
+[node name="Marmite" type="Node2D" groups=["marmite"]]
+scale = Vector2(1.52, 1.52)
+script = ExtResource("1_v5v84")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-scale = Vector2(2.52, 3.08)
-shape = SubResource("CircleShape2D_b1eam")
+[node name="comptoir_interaction" type="Area2D" parent="." groups=["marmite"]]
+script = ExtResource("1_7cw65")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="comptoir_interaction" groups=["marmite"]]
+shape = SubResource("CircleShape2D_luk5g")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+
+[node name="Sprite2D" type="Sprite2D" parent="StaticBody2D"]
+scale = Vector2(0.0252976, 0.0252976)
+texture = ExtResource("2_3qcrx")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(-2.5, -1.5)
+shape = SubResource("RectangleShape2D_h0ilc")
+
+[node name="timer" type="Label" parent="StaticBody2D"]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[connection signal="body_entered" from="comptoir_interaction" to="comptoir_interaction" method="_on_body_entered"]
+[connection signal="body_exited" from="comptoir_interaction" to="comptoir_interaction" method="_on_body_exited"]
