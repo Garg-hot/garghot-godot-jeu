@@ -3,13 +3,10 @@ extends Area2D
 var player_nearby = false  
 var ingredient_plats = []  # Liste des ingrédients nécessaires pour le plat sélectionné
 var plat_selectionne = null  
-#var cuisson = preload("res://cuisson/cuisson.tscn")  
-const API_URL = "https://m-esakafo-1.onrender.com/api/commandes/attente"  
-#const PlatScene = preload("res://plats/plat.tscn")  
-var ingredient_trouve = null
+const API_URL = "http://localhost/cuisine_game_ap/get_plats.php"  
+const PlatScene = preload("res://plat.tscn")  
 @onready var temps = $"../StaticBody2D/etat de cuisson"
-@onready var goblin = get_node("/root/Main/Player")
-@onready var recettes = get_node("/root/Main/Recette")  
+@onready var player = get_node("/root/Main/Player")  
 @onready var http_request = HTTPRequest.new()  
 @onready var refresh_timer = Timer.new()  
 @onready var cuisson_manager = get_node("/root/CuissonManager")  
@@ -41,10 +38,9 @@ func _process(delta):
 		#print("Interaction avec le feu.")
 		selectionner_plat()
 	if player_nearby and Input.is_action_just_pressed("grab"):
-
-		if goblin.food_info != null:
-			print("depot d'ingredient :", goblin.food_info["nom"])
-			verifier_ingredient_ajoute(goblin.food_info)
+		if player.food_info != null:
+			print("Depot d'ingredient :", player.food_info["nom"])
+			verifier_ingredient_ajoute(player.food_info)
 		else:
 			print("Aucun ingredient entre les mains")
 
@@ -59,24 +55,23 @@ func selectionner_plat():
 		return
 
 	if plat_selectionne:
-		print("Un plat est déjà en cours de cuisson :", plat_selectionne["plat"]["nom"])
+		print("Un plat est déjà en cours de cuisson :", plat_selectionne["nom_plat"])
 		return
 
 	for plat in cuisson_manager.plats_a_preparer:
-		var plat_id = int(plat["plat"]["id"])
+		var plat_id = int(plat["id"])
 
 		if cuisson_manager.est_plat_cuit(plat_id):
-			print("Plat déjà cuit :", plat["plat"]["nom"])
+			print("Plat déjà cuit :", plat["nom_plat"])
 			continue  # Ignore les plats déjà cuits
 
 		plat_selectionne = plat
-		print("Plat sélectionné :", plat_selectionne["plat"]["nom"])
+		print("Plat sélectionné :", plat_selectionne["nom_plat"])
 
 		# Récupérer les ingrédients nécessaires pour ce plat
 		ingredient_plats.clear()
-		for ingredientrecette in recettes.recette_recup:
-			if ingredientrecette["plat"]["id"] == plat_selectionne["plat"]["id"]:
-				ingredient_plats.append(ingredientrecette)
+		for ingredient in plat["ingredients"]:
+			ingredient_plats.append(ingredient)
 		cuisson_manager.plats_a_preparer.erase(plat_selectionne)  # Retirer le plat de la liste
 		print("Ingrédients nécessaires :", ingredient_plats)
 		return
@@ -93,29 +88,25 @@ func _on_request_completed(_result, response_code, _headers, body):
 		if parse_result == OK and typeof(data) == TYPE_ARRAY:
 			var nouveaux_plats = []
 
-			# Vérification de chaque plat
-			for plat in data:
-				var id_plat = int(plat["plat"]["id"])
-				ajouter_plats_a_preparer(nouveaux_plats, plat)
+			# Vérification de chaque plat dans les commandes
+			for commande in data:
+				for plat in commande["plats"]:
+					ajouter_plats_a_preparer(nouveaux_plats, plat)
 
 func ajouter_plats_a_preparer(nouveaux_plats, plat):
-	var plat_id = int(plat["plat"]["id"])
+	var plat_id = int(plat["id"])
 
 	# Ignore les plats déjà cuits
-	#if cuisson_manager.est_plat_cuit(plat_id):
-		##print("Plat déjà cuit, ignoré :", plat.get("nom", ""))
-		#return
+	if cuisson_manager.est_plat_cuit(plat_id):
+		return
 
 	# Vérifie si le plat est déjà dans la liste avant de l'ajouter
-	#if not cuisson_manager.plats_a_preparer.has(plat):
-		#cuisson_manager.ajouter_plat_a_preparer(plat)
-		#nouveaux_plats.append(plat)
-	##else:
-		#print("Plat déjà présent, ignoré :", plat.get("nom", ""))
+	if not cuisson_manager.plats_a_preparer.has(plat):
+		cuisson_manager.ajouter_plat_a_preparer(plat)
+		nouveaux_plats.append(plat)
 
 	# Tri des nouveaux plats par ID
-	nouveaux_plats.sort_custom(func(a, b): return int(a["plat"]["id"]) < int(b["plat"]["id"]))
-
+	nouveaux_plats.sort_custom(func(a, b): return int(a["id"]) < int(b["id"]))
 
 # Vérifie si un ingrédient est ajouté au feu
 func verifier_ingredient_ajoute(ingredient_info):
@@ -123,16 +114,18 @@ func verifier_ingredient_ajoute(ingredient_info):
 		print("Aucun plat sélectionné pour la cuisson.")
 		return
 
+	var ingredient_trouve = null
+
 	# Vérifier si l'ingrédient est dans la recette du plat
 	var index = 0
 	for i in ingredient_plats:
-		if i["ingredient"]["id"] == ingredient_info["id"]:
+		if i["nom"] == ingredient_info["nom"]:  # Correction ici
 			ingredient_trouve = i
 			break
-		index+=1
+		index += 1
 
 	if ingredient_trouve != null:
-		print("Ingrédient ajouté :", ingredient_trouve["ingredient"]["nom"])
+		print("Ingrédient ajouté :", ingredient_trouve["nom"])  # Correction ici
 		ingredient_plats.remove_at(index)  # Retirer l'ingrédient de la liste
 		print("Ingrédients restants :", ingredient_plats)
 
@@ -140,33 +133,20 @@ func verifier_ingredient_ajoute(ingredient_info):
 		if ingredient_plats.size() == 0:
 			commencer_cuisson()
 	else:
-		print("ingredient invalide, veillez le jeter")
+		print("Ingrédient invalide, veuillez le jeter")
 
 # Débute la cuisson lorsque tous les ingrédients sont réunis
 func commencer_cuisson():
 	if plat_selectionne:
 		# Récupérer le temps de cuisson depuis l'API ou une valeur par défaut
-		#temps_restant = Utiles.format_time(plat_selectionne["plat"].get("tempsCuisson", ""))
+		temps_restant = Utiles.format_time(plat_selectionne.get("tempsCuisson", ""))
 		timer_cuisson = get_tree().create_timer(temps_restant)
-		print("Début de la cuisson de", plat_selectionne["plat"]["nom"])
+		print("Début de la cuisson de", plat_selectionne["nom_plat"])
 		await timer_cuisson.timeout  # Attendre la fin du timer
 		
-		cuisson_manager.ajouter_plat_cuit(plat_selectionne["plat"]["id"])  # Ajouter le plat cuit à la liste
-		print("Plat cuit :", plat_selectionne["plat"]["nom"])
+		cuisson_manager.ajouter_plat_cuit(plat_selectionne["id"])  # Ajouter le plat cuit à la liste
+		print("Plat cuit :", plat_selectionne["nom_plat"])
 		
 		plat_selectionne = null
 		temps_restant = 0
 		timer_cuisson = null
-
-# Fonction désactivée mais conservée pour référence
-# func _on_request_completed(result, response_code, headers, body):
-#     var json = JSON.parse(body.get_string_from_utf8())
-#     print("Données API reçues :", json.result)
-
-#func actualiser_plats():
-	#print("Food info :", goblin.food_info)
-	#print("recettes :", recettes.recette_recup)
-	# Actualisation de la liste des plats depuis CuissonManager
-	#http_request.request(API_URL)
-	#print(cuisson_manager.plats_deja_cuits_global)
-	#print(cuisson_manager.plats_a_preparer)

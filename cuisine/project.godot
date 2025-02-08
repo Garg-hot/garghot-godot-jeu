@@ -19,6 +19,7 @@ config/icon="res://marmite/—Pngtree—pixel campfire_8134386.png"
 
 GetIngredient="*res://get_ingredient.gd"
 Ingredient="*res://ingredient.gd"
+CuissonManager="*res://CuissonManager.gd"
 
 [input]
 
