@@ -116,38 +116,38 @@ func verifier_ingredient_ajoute(ingredient_info):
 		return
 
 	var ingredient_trouve = null
-
-	# Vérifier si l'ingrédient est dans la recette du plat
-	var index = 0
-	for i in ingredient_plats:
-		if i["nom"] == ingredient_info["nom"]:  # Correction ici
-			ingredient_trouve = i
-			break
-		index += 1
-
-	if ingredient_trouve != null:
-		print("Ingrédient ajouté :", ingredient_trouve["nom"])  # Correction ici
-		ingredient_plats.remove_at(index)  # Retirer l'ingrédient de la liste
-		print("Ingrédients restants :", ingredient_plats)
-
-		# Si tous les ingrédients sont réunis, lancer la cuisson
-		if ingredient_plats.size() == 0:
-			commencer_cuisson()
-	else:
-		print("Ingrédient invalide, veuillez le jeter")
-
-# Débute la cuisson lorsque tous les ingrédients sont réunis
-func commencer_cuisson():
-	if plat_selectionne:
-		# Récupérer le temps de cuisson depuis l'API ou une valeur par défaut
-		temps_restant = Utiles.format_time(plat_selectionne.get("tempsCuisson", ""))
-		timer_cuisson = get_tree().create_timer(temps_restant)
-		print("Début de la cuisson de", plat_selectionne["nom_plat"])
-		await timer_cuisson.timeout  # Attendre la fin du timer
-		
-		cuisson_manager.ajouter_plat_cuit(plat_selectionne["id"])  # Ajouter le plat cuit à la liste
-		print("Plat cuit :", plat_selectionne["nom_plat"])
-		
-		plat_selectionne = null
-		temps_restant = 0
-		timer_cuisson = null
+#
+	## Vérifier si l'ingrédient est dans la recette du plat
+	#var index = 0
+	#for i in ingredient_plats:
+		#if i["nom"] == ingredient_info["nom"]:  # Correction ici
+			#ingredient_trouve = i
+			#break
+		#index += 1
+#
+	#if ingredient_trouve != null:
+		#print("Ingrédient ajouté :", ingredient_trouve["nom"])  # Correction ici
+		#ingredient_plats.remove_at(index)  # Retirer l'ingrédient de la liste
+		#print("Ingrédients restants :", ingredient_plats)
+#
+		## Si tous les ingrédients sont réunis, lancer la cuisson
+		#if ingredient_plats.size() == 0:
+			#commencer_cuisson()
+	#else:
+		#print("Ingrédient invalide, veuillez le jeter")
+#
+## Débute la cuisson lorsque tous les ingrédients sont réunis
+#func commencer_cuisson():
+	#if plat_selectionne:
+		## Récupérer le temps de cuisson depuis l'API ou une valeur par défaut
+		#temps_restant = Utiles.format_time(plat_selectionne.get("tempsCuisson", ""))
+		#timer_cuisson = get_tree().create_timer(temps_restant)
+		#print("Début de la cuisson de", plat_selectionne["nom_plat"])
+		#await timer_cuisson.timeout  # Attendre la fin du timer
+		#
+		#cuisson_manager.ajouter_plat_cuit(plat_selectionne["id"])  # Ajouter le plat cuit à la liste
+		#print("Plat cuit :", plat_selectionne["nom_plat"])
+		#
+		#plat_selectionne = null
+		#temps_restant = 0
+		#timer_cuisson = null
