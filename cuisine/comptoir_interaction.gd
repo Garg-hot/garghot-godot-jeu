@@ -3,8 +3,8 @@ class_name Player extends Area2D
 var player_nearby = false  
 var ingredient_plats = []  # Liste des ingrédients nécessaires pour le plat sélectionné
 var plat_selectionne = null  
-const API_URL = "http://localhost/cuisine_game_ap/get_plats.php"  
-const PlatScene = preload("res://plat.tscn")  
+const API_URL = "https://garg-hot-web.onrender.com/api/commandes/"  
+#const PlatScene = preload("res://plat.tscn")  
 @onready var temps = $"../StaticBody2D/etat de cuisson"
 @onready var player = get_node("/root/Main/Player")  
 @onready var http_request = HTTPRequest.new()  

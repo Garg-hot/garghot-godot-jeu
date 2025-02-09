@@ -22,7 +22,7 @@ func _ready():
 func fetch_commandes():
 	var http_request = $HTTPRequest
 	http_request.connect("request_completed", Callable(self, "_on_HTTPRequest_request_completed"))
-	http_request.request("http://localhost/cuisine_game_ap/get_plats.php")  # URL modifiée pour les commandes
+	http_request.request("https://garg-hot-web.onrender.com/api/commandes/")  # URL modifiée pour les commandes
 
 # Callback lorsque la requête HTTP est terminée
 func _on_HTTPRequest_request_completed(result, response_code, headers, body):
@@ -33,26 +33,30 @@ func _on_HTTPRequest_request_completed(result, response_code, headers, body):
 			print("Erreur de décodage JSON!")
 			return
 		commandes_data = json_instance.get_data()  # Récupère directement le tableau des commandes
-		#print("Données des commandes reçues : ", commandes_data)  # Débogage : vérifier la structure des données
+		print("Données des commandes reçues : ", commandes_data)  # Débogage : vérifier la structure des données
 		display_commandes()  # Affichage des commandes
 
 # Fonction pour afficher les commandes dans la scène
 func display_commandes():
 	clear_container(commandes_container)  # Supprime les boutons et labels existants
 	for commande in commandes_data:
-		var commande_label = Label.new()  # Crée un nouveau Label
-		commande_label.text = "Commande " + str(commande["commande_id"])  
-		commandes_container.add_child(commande_label)  # Ajoute le label au conteneur
+		print("Commande actuelle : ", commande)  # Impression pour vérifier la structure de chaque commande
+		if commande.has("commande_id"):
+			var commande_label = Label.new()  # Crée un nouveau Label
+			commande_label.text = "Commande " + str(commande["commande_id"])
+			commandes_container.add_child(commande_label)  # Ajoute le label au conteneur
 
-		# Affiche les plats pour cette commande
-		for plat in commande["plats"]:
-			if plat.has("nom_plat"):
-				var plat_button = Button.new()
-				plat_button.text = plat["nom_plat"]
-				plat_button.connect("pressed", Callable(self, "_on_plat_clicked").bind(commande, plat, plat_button))
-				commandes_container.add_child(plat_button)
-			else:
-				print("Erreur : le plat ne contient pas la clé 'nom_plat'. Contenu du plat : ", plat)
+			# Affiche les plats pour cette commande
+			for plat in commande["plats"]:
+				if plat.has("nom_plat"):
+					var plat_button = Button.new()
+					plat_button.text = plat["nom_plat"]
+					plat_button.connect("pressed", Callable(self, "_on_plat_clicked").bind(commande, plat, plat_button))
+					commandes_container.add_child(plat_button)
+				else:
+					print("Erreur : le plat ne contient pas la clé 'nom_plat'. Contenu du plat : ", plat)
+		else:
+			print("Erreur : la commande ne contient pas la clé 'commande_id'. Contenu de la commande : ", commande)
 
 # Fonction appelée lorsque un bouton de plat est cliqué
 func _on_plat_clicked(commande, plat, plat_button):
@@ -62,19 +66,18 @@ func _on_plat_clicked(commande, plat, plat_button):
 			if marmite.is_ready_for_new_plat():  # Vérifie si la marmite est prête pour un nouveau plat
 				first_free_marmite = marmite
 				break
-		
+
 	if first_free_marmite != null:
 		plats_en_cours.append(plat)
 		commande["plats"].erase(plat)  # Supprime le plat de la commande
 		plat_button.queue_free()  # Supprime le bouton du plat de la scène
 		print("Plat sélectionné et ajouté à la liste des plats en cours : ", plat["nom_plat"])
 		display_plats_en_cours()
-		
+
 		first_free_marmite.assign_plat(plat)  # Assigne le plat à la marmite
 		first_free_marmite = null  # Réinitialise la marmite libre
 	else:
 		print("Aucune marmite libre disponible.")
-
 
 # Fonction pour afficher les plats en cours
 func display_plats_en_cours():
@@ -124,7 +127,7 @@ func terminer_commande():
 
 func generer_feux():
 	var spacing = 75  # Espacement entre chaque feu (ajuste selon tes besoins)
-	
+
 	for i in range(nb_feux):
 		var feu_instance = FeuScene.instantiate()
 		feu_instance.name = "Feu_" + str(i)
@@ -135,4 +138,4 @@ func generer_feux():
 
 		# Positionnement manuel (ex: en ligne horizontale)
 		var offset = Vector2(600, 150)
-		feu_instance.position = Vector2(i * spacing, i * spacing/2) + offset
+		feu_instance.position = Vector2(i * spacing, i * spacing / 2) + offset
