@@ -1,74 +1,69 @@
 extends Node2D
 
-var plat_selectionne = null  # Propriété pour stocker le plat sélectionné
-var ingredients_necessaires = []  # Propriété pour stocker les ingrédients nécessaires pour le plat assigné
-var timer = null  # Timer pour la cuisson
-var cooking_progress = 0  # Progression de la cuisson
-var plat_image_path = ""  # Propriété pour stocker le chemin de l'image du plat
-var message_affiche = false  # Propriété pour suivre l'état du message affiché
+var plat_selectionne = null
+var ingredients_necessaires = []
+var timer = null
+var cooking_progress = 0
+var plat_image_path = ""
+var plat_id = 0
+var plat_nom = ""
+var plat_prete = false
+var message_affiche = false
 
-@export var cooking_time = 10.0  # Temps de cuisson en secondes
-var plat_prete = false  # Propriété pour suivre l'état du plat prêt
+@export var cooking_time = 10.0
+signal plat_prete_signal
 
 func _ready():
-	timer = $Timer  # Assigne le Timer de la scène à la variable
+	timer = $Timer
 	if timer:
-		timer.connect("timeout", Callable(self, "_on_cooking_complete"))  # Connexion du signal de timeout
-	else:
-		print("Erreur : Timer non trouvé.")
+		timer.connect("timeout", Callable(self, "_on_cooking_complete"))
 
-	var progress_bar = $ProgressBar  # Assigne le ProgressBar de la scène à la variable
+	var progress_bar = $ProgressBar
 	if progress_bar:
-		progress_bar.visible = false  # Masquer le ProgressBar initialement
-	else:
-		print("Erreur : ProgressBar non trouvé.")
+		progress_bar.visible = false
 
-	var message_label = $Label  # Assigne le Label de la scène à la variable
+	var plat_sprite = $PlatSprite
+	if plat_sprite:
+		plat_sprite.visible = false
+
+	var message_label = $Label
 	if message_label:
-		message_label.visible = false  # Masquer le Label initialement
-	else:
-		print("Erreur : Label non trouvé.")
+		message_label.visible = false
 
 func add_ingredient(ingredient, area):
 	if not plat_selectionne:
 		print("Aucun plat assigné à cette marmite.")
 		return
-	
-	var found = false
-	for ing in ingredients_necessaires:
-		if ing["nom"] == ingredient["nom"]:
-			print("Ingrédient ajouté : ", ingredient["nom"])
-			ingredients_necessaires.erase(ing)  # Retire l'ingrédient de la liste une fois ajouté
-			area.queue_free()  # Supprime l'ingrédient de la scène
-			afficher_ingredients_necessaires()  # Met à jour l'affichage des ingrédients nécessaires
-			found = true
 
-			# Vérifie si tous les ingrédients ont été ajoutés
+	for i in range(ingredients_necessaires.size()):
+		if ingredients_necessaires[i]["nom"] == ingredient["nom"]:
+			print("Ingrédient ajouté : ", ingredient["nom"])
+			ingredients_necessaires.remove_at(i)
+			area.queue_free()
+			afficher_ingredients_necessaires()
+
 			if ingredients_necessaires.size() == 0:
 				commencer_cuisson()
+			return
 
-			break
+	print("Ingrédient non accepté : ", ingredient["nom"])
 
-	if not found:
-		print("Ingrédient non accepté : ", ingredient["nom"])
-
-# Méthode pour vérifier si la marmite est prête pour un nouveau plat
 func is_ready_for_new_plat():
 	return plat_selectionne == null
 
-# Méthode pour assigner un plat à la marmite
 func assign_plat(plat):
 	plat_selectionne = plat
-	ingredients_necessaires = plat["ingredients"].duplicate()  # Assigne la liste des ingrédients nécessaires
+	plat_id = plat["id"]
+	plat_nom = plat["nom_plat"]
+	ingredients_necessaires = plat["ingredients"].duplicate()
 	if "sprite" in plat:
-		plat_image_path = "res://plat/" + plat["sprite"]  # Stocke le chemin de l'image du plat
+		plat_image_path = "res://path_to_images/" + plat["sprite"]
 	else:
 		print("Erreur : La clé 'sprite' est absente du dictionnaire du plat.")
 	print("Plat assigné à la marmite : ", plat["nom_plat"])
 	afficher_ingredients_necessaires()
-	message_affiche = false  # Réinitialiser l'état du message affiché
+	message_affiche = false
 
-# Méthode pour afficher les ingrédients nécessaires du plat assigné
 func afficher_ingredients_necessaires():
 	if plat_selectionne:
 		print("Ingrédients nécessaires pour ", plat_selectionne["nom_plat"], " :")
@@ -77,67 +72,85 @@ func afficher_ingredients_necessaires():
 	else:
 		print("Aucun plat assigné à cette marmite.")
 
-# Méthode pour commencer la cuisson
 func commencer_cuisson():
 	print("Tous les ingrédients sont ajoutés. Commencez la cuisson de ", plat_selectionne["nom_plat"])
-	# Réinitialiser les propriétés de la marmite après la cuisson
-	plat_selectionne = null
-	ingredients_necessaires.clear()
-	cooking_progress = 0  # Réinitialise la progression de la cuisson
-	plat_prete = false  # Le plat n'est pas encore prêt
+	plat_prete = false
 	if timer:
-		timer.start(cooking_time)  # Démarre la minuterie de cuisson
+		timer.start(cooking_time)
 	var progress_bar = $ProgressBar
 	if progress_bar:
-		progress_bar.visible = true  # Rend la jauge de progression visible
+		progress_bar.visible = true
 
-# Méthode pour mettre à jour la progression de la cuisson
 func _process(delta):
 	if timer and timer.time_left > 0:
 		cooking_progress = (cooking_time - timer.time_left) / cooking_time
 		var progress_bar = $ProgressBar
 		if progress_bar:
-			progress_bar.value = cooking_progress * 100  # Met à jour la jauge de progression
+			progress_bar.value = cooking_progress * 100
 
-# Méthode appelée lorsque la cuisson est terminée
 func _on_cooking_complete():
 	print("La cuisson est terminée !")
 	var progress_bar = $ProgressBar
 	if progress_bar:
-		progress_bar.visible = false  # Cache la jauge de progression
-	
-	var message_label = $Label
-	if message_label:
-		message_label.text = "Plat prêt ! Appuyez sur A pour reprendre le plat."
-		message_label.visible = true  # Affiche le message
-	
-	plat_prete = true  # Le plat est prêt
-	message_affiche = true  # Indique que le message a été affiché
+		progress_bar.visible = false
 
-# Méthode pour permettre au joueur de récupérer le plat
-func recuperer_plat():
-	if plat_prete:  # Vérifie si le plat est prêt
+	var plat_sprite = $PlatSprite
+	if plat_sprite:
+		plat_sprite.texture = load(plat_image_path)
+		plat_sprite.visible = true
+
+	plat_prete = true
+	emit_signal("plat_prete_signal")
+
+	if not message_affiche:
 		var message_label = $Label
 		if message_label:
-			message_label.visible = false  # Cache le message
-		
-		# Envoie l'image du plat récupéré au joueur
-		var player = get_tree().get_root().get_node("Player")  # Remplace "Player" par le chemin du nœud joueur
+			message_label.text = "Le plat est prêt !"
+			message_label.visible = true
+		message_affiche = true
+
+	afficher_plat_a_cote()
+
+func afficher_plat_a_cote():
+	var ingredient_scene = load("res://ingredient.tscn")  # Remplace par le chemin correct
+	if ingredient_scene:
+		var new_plat = ingredient_scene.instantiate()  # Utilise instantiate() pour Godot 4.x
+		new_plat.name = plat_nom
+		new_plat.position = position + Vector2(50, 0)
+		add_child(new_plat)
+		new_plat.add_to_group("plats")
+	else:
+		print("Erreur : Impossible de charger la scène 'ingredient.tscn'.")
+
+func recuperer_plat():
+	if plat_prete:
+		var plat_sprite = $PlatSprite
+		if plat_sprite:
+			plat_sprite.visible = false
+
+		var message_label = $Label
+		if message_label:
+			message_label.visible = false
+
+		var player = get_tree().get_root().get_node("Player")
 		if player:
 			player.set_plat_image(plat_image_path)
-		print("Le plat a été récupéré.")
-		
-		plat_prete = false  # Réinitialise l'état du plat prêt
-		liberer_marmite()  # Réinitialise et libère la marmite
+			player.set_plat_id(plat_id)
+			player.set_plat_nom(plat_nom)
+		print("Le plat a été récupéré. ID du plat : ", plat_id, ", Nom du plat : ", plat_nom)
 
-# Méthode pour réinitialiser et libérer la marmite
+		plat_prete = false
+		liberer_marmite()
+
 func liberer_marmite():
 	plat_selectionne = null
 	ingredients_necessaires.clear()
 	plat_image_path = ""
+	plat_id = 0
+	plat_nom = ""
 	plat_prete = false
 	var message_label = $Label
 	if message_label:
-		message_label.visible = false  # Masquer le message
-	message_affiche = false  # Réinitialise l'état du message affiché
+		message_label.visible = false
+	message_affiche = false
 	print("La marmite est prête pour un nouveau plat.")

@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3 uid="uid://c43ltlt1jncvp"]
+
+[ext_resource type="Texture2D" uid="uid://cupk86rgcb55w" path="res://2727361609d93f4309fd9501363b3740.jpg" id="1_aim2s"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_omi2i"]
+size = Vector2(92, 111)
+
+[node name="PlatScene" type="Node2D"]
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(0, 1.5)
+shape = SubResource("RectangleShape2D_omi2i")
+
+[node name="2727361609d93f4309Fd9501363b3740" type="Sprite2D" parent="Area2D"]
+position = Vector2(2.00001, -0.999998)
+scale = Vector2(0.105714, 0.105714)
+texture = ExtResource("1_aim2s")

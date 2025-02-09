@@ -14,7 +14,7 @@ func _ready():
 
 	if http_request:
 		http_request.connect("request_completed", Callable(self, "_on_HTTPRequest_request_completed"))
-		http_request.request("http://localhost/cuisine_game_ap/connexion.php")
+		http_request.request("https://garg-hot-web.onrender.com/api/ingredient/")
 	else:
 		print("Erreur : Le nœud HTTPRequest est introuvable.")
 	request_sent = true
@@ -57,7 +57,7 @@ func spawn_food(food_info, position):
 	var texture = load("res://assets/" + food_info["sprite"])
 	if texture:
 		sprite.texture = texture
-		var target_size = Vector2(60, 60)
+		var target_size = Vector2(40, 40)
 		var texture_size = texture.get_size()
 		sprite.scale = target_size / texture_size
 		print(food_info)
