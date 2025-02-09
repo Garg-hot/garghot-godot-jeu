@@ -26,6 +26,7 @@ var anim_directions = {
 		["front_walk", false],
 		["45front_left_walk", false],
 		["side_left_walk", false],
+		["45back_left_walk", false],
 		["back_walk", false],
 		["45back_right_walk", false],
 	],
@@ -72,28 +73,16 @@ func _process(delta):
 	if Input.is_action_just_pressed("recover"):  # "A" dans les Input Map
 		if is_near_plat():
 			recuperer_plat()
-		elif is_near_marmite():
-			var marmite = get_nearby_marmite()
-			if marmite and marmite.plat_prete:
-				marmite.recuperer_plat()
-
 	elif Input.is_action_just_pressed("pick"):  # "F" dans les Input Map
 		if food_held:
 			if is_near_marmite():
 				add_food_to_marmite()
-			elif is_near_plat():
-				recuperer_plat()
 			else:
 				drop_food()
 		else:
 			pick_food()
 	elif Input.is_action_just_pressed("interact"):  # "E" dans les Input Map
-		if is_near_marmite():
-			var marmite = get_nearby_marmite()
-			if marmite:
-				marmite.afficher_ingredients_necessaires()
-		elif is_near_delivery_area():
-			livrer_plat()
+		recuperer_plat()
 
 func pick_food():
 	var areas = $PickupArea.get_overlapping_areas()
@@ -146,20 +135,6 @@ func is_near_plat():
 			return true
 	return false
 
-func is_near_delivery_area():
-	var areas = $PickupArea.get_overlapping_areas()
-	for area in areas:
-		if area.is_in_group("delivery_area"):
-			return true
-	return false
-
-func get_nearby_marmite():
-	var areas = $PickupArea.get_overlapping_areas()
-	for area in areas:
-		if area.is_in_group("marmite"):
-			return area.get_parent()
-	return null
-
 func add_food_to_marmite():
 	if food_held and is_instance_valid(food_held):
 		for area in $PickupArea.get_overlapping_areas():
@@ -192,21 +167,11 @@ func recuperer_plat():
 				plat_sprite.recuperer_plat()
 				plat_pris = true
 				print("Plat récupéré :", plat_nom, "ID du plat :", plat_id)
+				afficher_message_plat_pris()
 				return
 
-func livrer_plat():
-	if plat_pris:
-		print("Plat livré :", plat_nom, "ID du plat :", plat_id)
-		var delivery_area = get_parent().get_node("DeliveryArea")
-		if delivery_area:
-			delivery_area.emit_signal("plat_livre", plat_id)
-		plat_image = null
-		plat_id = 0
-		plat_nom = ""
-		plat_pris = false
-		var plat_sprite = $PlatSprite
-		if plat_sprite:
-			plat_sprite.texture = null
+func afficher_message_plat_pris():
+	print("Le joueur a bien récupéré le plat :", plat_nom, "avec l'ID :", plat_id)
 
 func set_plat_image(image_path):
 	plat_image = load(image_path)

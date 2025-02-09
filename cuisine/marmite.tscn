@@ -13,6 +13,7 @@ size = Vector2(29, 25)
 [node name="Marmite" type="Node2D" groups=["marmite"]]
 scale = Vector2(1.52, 1.52)
 script = ExtResource("1_v5v84")
+cooking_time = null
 
 [node name="comptoir_interaction" type="Area2D" parent="." groups=["marmite"]]
 script = ExtResource("1_7cw65")
@@ -48,7 +49,11 @@ offset_top = -42.0
 offset_right = 6.0
 offset_bottom = -19.0
 
-[node name="PlatSprite" type="Sprite2D" parent="."]
+[node name="DeliverButton" type="Button" parent="."]
+offset_left = -5.0
+offset_top = -36.0
+offset_right = 3.0
+offset_bottom = -28.0
 
 [connection signal="body_entered" from="comptoir_interaction" to="comptoir_interaction" method="_on_body_entered"]
 [connection signal="body_exited" from="comptoir_interaction" to="comptoir_interaction" method="_on_body_exited"]

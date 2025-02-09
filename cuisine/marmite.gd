@@ -17,36 +17,53 @@ func _ready():
 	timer = $Timer
 	if timer:
 		timer.connect("timeout", Callable(self, "_on_cooking_complete"))
+	else:
+		print("Erreur : Timer non trouvé.")
+	
+	var deliver_button = $DeliverButton
+	if deliver_button:
+		deliver_button.connect("pressed", Callable(self, "_on_DeliverButton_pressed"))
+		deliver_button.visible = false  # Masquer le bouton au démarrage
 
 	var progress_bar = $ProgressBar
 	if progress_bar:
 		progress_bar.visible = false
+	else:
+		print("Erreur : ProgressBar non trouvé.")
 
 	var plat_sprite = $PlatSprite
 	if plat_sprite:
 		plat_sprite.visible = false
+	else:
+		print("Erreur : PlatSprite non trouvé.")
 
 	var message_label = $Label
 	if message_label:
 		message_label.visible = false
+	else:
+		print("Erreur : Label non trouvé.")
 
 func add_ingredient(ingredient, area):
 	if not plat_selectionne:
 		print("Aucun plat assigné à cette marmite.")
 		return
-
-	for i in range(ingredients_necessaires.size()):
-		if ingredients_necessaires[i]["nom"] == ingredient["nom"]:
+	
+	var found = false
+	for ing in ingredients_necessaires:
+		if ing["nom"] == ingredient["nom"]:
 			print("Ingrédient ajouté : ", ingredient["nom"])
-			ingredients_necessaires.remove_at(i)
+			ingredients_necessaires.erase(ing)
 			area.queue_free()
 			afficher_ingredients_necessaires()
+			found = true
 
 			if ingredients_necessaires.size() == 0:
 				commencer_cuisson()
-			return
 
-	print("Ingrédient non accepté : ", ingredient["nom"])
+			break
+
+	if not found:
+		print("Ingrédient non accepté : ", ingredient["nom"])
 
 func is_ready_for_new_plat():
 	return plat_selectionne == null
@@ -66,7 +83,7 @@ func assign_plat(plat):
 
 func afficher_ingredients_necessaires():
 	if plat_selectionne:
-		print("Ingrédients nécessaires pour ", plat_selectionne["nom_plat"], " :")
+		print( plat_selectionne["nom_plat"], " :")
 		for ingredient in ingredients_necessaires:
 			print("- ", ingredient["nom"])
 	else:
@@ -89,11 +106,14 @@ func _process(delta):
 			progress_bar.value = cooking_progress * 100
 
 func _on_cooking_complete():
+	if plat_prete or not plat_selectionne:
+		return  # Empêche l'impression multiple du message "La cuisson est terminée !" et vérifie s'il y a un plat assigné
+		
 	print("La cuisson est terminée !")
 	var progress_bar = $ProgressBar
 	if progress_bar:
 		progress_bar.visible = false
-
+	
 	var plat_sprite = $PlatSprite
 	if plat_sprite:
 		plat_sprite.texture = load(plat_image_path)
@@ -102,51 +122,39 @@ func _on_cooking_complete():
 	plat_prete = true
 	emit_signal("plat_prete_signal")
 
-	if not message_affiche:
-		var message_label = $Label
-		if message_label:
-			message_label.text = "Le plat est prêt !"
-			message_label.visible = true
-		message_affiche = true
+	var deliver_button = $DeliverButton
+	if deliver_button:
+		deliver_button.text = "Livrer " + plat_nom + " (ID: " + str(plat_id) + ")"
+		deliver_button.visible = true  # Afficher le bouton de livraison
+		deliver_button.size = (50, 50)
 
-	afficher_plat_a_cote()
+	#if not message_affiche:
+		#var message_label = $Label
+		#if message_label:
+			#message_label.text = "Le plat est prêt !"
+			#message_label.visible = true
+		#message_affiche = true
 
-func afficher_plat_a_cote():
-	var ingredient_scene = load("res://ingredient.tscn")  # Remplace par le chemin correct
-	if ingredient_scene:
-		var new_plat = ingredient_scene.instantiate()  # Utilise instantiate() pour Godot 4.x
-		new_plat.name = plat_nom
-		new_plat.position = position + Vector2(50, 0)
-		add_child(new_plat)
-		new_plat.add_to_group("plats")
-	else:
-		print("Erreur : Impossible de charger la scène 'ingredient.tscn'.")
-
-func recuperer_plat():
-	if plat_prete:
-		var plat_sprite = $PlatSprite
-		if plat_sprite:
-			plat_sprite.visible = false
-
-		var message_label = $Label
-		if message_label:
-			message_label.visible = false
-
-		var player = get_tree().get_root().get_node("Player")
-		if player:
-			player.set_plat_image(plat_image_path)
-			player.set_plat_id(plat_id)
-			player.set_plat_nom(plat_nom)
-		print("Le plat a été récupéré. ID du plat : ", plat_id, ", Nom du plat : ", plat_nom)
-
-		plat_prete = false
-		liberer_marmite()
+func _on_DeliverButton_pressed():
+	print("Le plat est bien livré")
+	var deliver_button = $DeliverButton
+	if deliver_button:
+		deliver_button.visible = false  # Masquer le bouton après la livraison
+	
+	var player = get_tree().get_root().get_node("Player")
+	if player:
+		# Déclarer le plat comme livré
+		player.set_plat_id(plat_id)
+		player.set_plat_nom(plat_nom)
+		print("Le plat a été livré. ID du plat : ", plat_id, ", Nom du plat : ", plat_nom)
+	
+	liberer_marmite()
 
 func liberer_marmite():
 	plat_selectionne = null
 	ingredients_necessaires.clear()
 	plat_image_path = ""
-	plat_id = 0
+	plat_id = ""
 	plat_nom = ""
 	plat_prete = false
 	var message_label = $Label
